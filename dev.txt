@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+  chroma_api:
+    build:
+      context: ./chroma_api
+      dockerfile: Dockerfile
+    ports:
+      - "2525:2525"
+    networks:
+      - backend-network
+    privileged: true # Run this service in privileged mode
+    depends_on:
+      - redis
+      - postgres
+
+  langchain_api:
+    build:
+      context: ./langchain_api
+      dockerfile: Dockerfile
+    ports:
+      - "2020:2020"
+    networks:
+      - backend-network
+    depends_on:
+      - redis
+      - postgres
+    privileged: true # Run this service in privileged mode
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    networks:
+      - backend-network
+    privileged: true # Run this service in privileged mode
+
+  postgres:
+    image: "postgres:13-alpine"
+    environment:
+      POSTGRES_USER: your_user
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: chat_history_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+
+volumes:
+  postgres_data:
